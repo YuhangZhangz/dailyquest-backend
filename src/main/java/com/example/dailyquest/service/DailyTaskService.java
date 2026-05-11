@@ -3,9 +3,13 @@ package com.example.dailyquest.service;
 import com.example.dailyquest.dto.request.CreateDailyTaskRequest;
 import com.example.dailyquest.dto.response.DailyTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
+import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.DailyTask;
 import com.example.dailyquest.repository.DailyTaskRepository;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -18,26 +22,33 @@ public class DailyTaskService {
     }
 
     public List<DailyTaskResponse> getAllDailyTasks() {
-        return dailyTaskRepository.findAll()
+        AppUser currentUser = getCurrentUser();
+
+        return dailyTaskRepository.findByUserId(currentUser.getId())
             .stream()
             .map(this::toResponse)
             .toList();
     }
 
     public DailyTaskResponse getDailyTaskById(Long id) {
-        DailyTask task = dailyTaskRepository.findById(id)
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
             .orElseThrow(() -> new DailyTaskNotFoundException(id));
-        
-            return toResponse(task);
+
+        return toResponse(task);
     }
 
     public DailyTaskResponse updateDailyTask(Long id, CreateDailyTaskRequest request) {
-        DailyTask task = dailyTaskRepository.findById(id)
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
             .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         task.setTitle(request.title());
         task.setDescription(request.description());
         task.setDifficulty(request.difficulty());
+        task.setBaseXp(request.difficulty().getBaseXp());
 
         DailyTask updatedTask = dailyTaskRepository.save(task);
 
@@ -45,11 +56,15 @@ public class DailyTaskService {
     }
 
     public DailyTaskResponse createDailyTask(CreateDailyTaskRequest request) {
+        AppUser currentUser = getCurrentUser();
+
         DailyTask task = new DailyTask(
             request.title(),
             request.description(),
             request.difficulty()
         );
+
+        task.setUser(currentUser);
 
         DailyTask savedTask = dailyTaskRepository.save(task);
 
@@ -57,10 +72,19 @@ public class DailyTaskService {
     }
 
     public void deleteDailyTask(Long id) {
-        if (!dailyTaskRepository.existsById(id)) {
-            throw new RuntimeException("Daily Task not found with id: " + id);
-        }
-        dailyTaskRepository.deleteById(id);
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+            .orElseThrow(() -> new DailyTaskNotFoundException(id));
+
+        dailyTaskRepository.delete(task);
+    }
+
+    private AppUser getCurrentUser() {
+        return (AppUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 
     private DailyTaskResponse toResponse(DailyTask task) {
