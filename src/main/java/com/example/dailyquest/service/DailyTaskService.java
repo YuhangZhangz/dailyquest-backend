@@ -9,7 +9,7 @@ import com.example.dailyquest.repository.AppUserRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -88,16 +88,31 @@ public class DailyTaskService {
         AppUser currentUser = getCurrentUser();
 
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-            .orElseThrow(() -> new DailyTaskNotFoundException(id));
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         task.setActive(false);
-        int gainedXp = task.getBaseXp();
 
+        int gainedXp = task.getBaseXp();
         currentUser.setTotalXp(currentUser.getTotalXp() + gainedXp);
 
-        int newLevel = (currentUser.getTotalXp() / 100) + 1; // Simple leveling system: every 100 XP = 1 level
-
+        int newLevel = (currentUser.getTotalXp() / 100) + 1;
         currentUser.setLevel(newLevel);
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastCompletedDate = currentUser.getLastCompletedDate();
+
+        if (lastCompletedDate == null) {
+            currentUser.setDailyStreak(1);
+        } else if (lastCompletedDate.isEqual(today)) {
+            // Same day completion, do not update streak
+        } else if (lastCompletedDate.plusDays(1).isEqual(today)) {
+            currentUser.setDailyStreak(currentUser.getDailyStreak() + 1);
+        } else {
+            currentUser.setDailyStreak(1);
+        }
+
+        currentUser.setLastCompletedDate(today);
+
         appUserRepository.save(currentUser);
         DailyTask updatedTask = dailyTaskRepository.save(task);
 

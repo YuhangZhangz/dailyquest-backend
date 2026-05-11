@@ -1,6 +1,7 @@
 package com.example.dailyquest.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "app_users")
@@ -29,6 +30,9 @@ public class AppUser {
     @Column(nullable = false)
     private Integer dailyStreak = 0; // Track the user's current daily streak
 
+    @Column
+    private LocalDate lastCompletedDate; // Track the last date the user completed a task for streak calculation
+    
     public AppUser() {}
 
     public AppUser(String username, String email, String passwordHash) {
@@ -38,6 +42,8 @@ public class AppUser {
         this.totalXp = 0;
         this.level = 1;
         this.dailyStreak = 0;
+        this.lastCompletedDate = null;
+
     }
 
     public Long getId() {
@@ -68,6 +74,10 @@ public class AppUser {
         return dailyStreak;
     }
 
+    public LocalDate getLastCompletedDate() {
+        return lastCompletedDate;
+    }
+
     public void setTotalXp(Integer totalXp) {
         this.totalXp = totalXp;
     }
@@ -78,6 +88,10 @@ public class AppUser {
 
     public void setDailyStreak(Integer dailyStreak) {
         this.dailyStreak = dailyStreak;
+    }
+
+    public void setLastCompletedDate(LocalDate lastCompletedDate) {
+        this.lastCompletedDate = lastCompletedDate;
     }
     
 }
