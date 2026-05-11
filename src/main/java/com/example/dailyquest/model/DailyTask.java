@@ -29,6 +29,10 @@ public class DailyTask {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
+
     public DailyTask() {
         // Default constructor for JPA
     }
@@ -70,6 +74,10 @@ public class DailyTask {
         return createdAt;
     }
 
+    public AppUser getUser() {
+        return user;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -96,6 +104,10 @@ public class DailyTask {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setUser(AppUser user) {
+        this.user = user;
     }
 
 }
