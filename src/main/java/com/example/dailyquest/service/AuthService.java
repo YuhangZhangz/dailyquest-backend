@@ -7,6 +7,8 @@ import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.repository.AppUserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.dailyquest.dto.response.UserProfileResponse;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class AuthService {
@@ -64,6 +66,22 @@ public class AuthService {
                 user.getEmail(),
                 jwtService.generateToken(user.getId(), user.getEmail())
                 
+        );
+    }
+
+    public UserProfileResponse getCurrentUserProfile() {
+        AppUser currentUser = (AppUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        return new UserProfileResponse(
+                currentUser.getId(),
+                currentUser.getUsername(),
+                currentUser.getEmail(),
+                currentUser.getTotalXp(),
+                currentUser.getLevel(),
+                currentUser.getDailyStreak()
         );
     }
 }

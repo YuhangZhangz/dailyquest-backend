@@ -5,8 +5,8 @@ import com.example.dailyquest.dto.response.DailyTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
 import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.DailyTask;
+import com.example.dailyquest.repository.AppUserRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +16,13 @@ import java.util.List;
 public class DailyTaskService {
 
     private final DailyTaskRepository dailyTaskRepository;
+    private final AppUserRepository appUserRepository;
 
-    public DailyTaskService(DailyTaskRepository dailyTaskRepository) {
+    public DailyTaskService(DailyTaskRepository dailyTaskRepository,
+                            AppUserRepository appUserRepository
+    ) {
         this.dailyTaskRepository = dailyTaskRepository;
+        this.appUserRepository = appUserRepository;
     }
 
     public List<DailyTaskResponse> getAllDailyTasks() {
@@ -78,6 +82,26 @@ public class DailyTaskService {
             .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         dailyTaskRepository.delete(task);
+    }
+
+    public DailyTaskResponse completeDailyTask(Long id) {
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+            .orElseThrow(() -> new DailyTaskNotFoundException(id));
+
+        task.setActive(false);
+        int gainedXp = task.getBaseXp();
+
+        currentUser.setTotalXp(currentUser.getTotalXp() + gainedXp);
+
+        int newLevel = (currentUser.getTotalXp() / 100) + 1; // Simple leveling system: every 100 XP = 1 level
+
+        currentUser.setLevel(newLevel);
+        appUserRepository.save(currentUser);
+        DailyTask updatedTask = dailyTaskRepository.save(task);
+
+        return toResponse(updatedTask);
     }
 
     private AppUser getCurrentUser() {

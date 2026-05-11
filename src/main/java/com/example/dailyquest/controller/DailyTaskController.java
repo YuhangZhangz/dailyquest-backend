@@ -49,4 +49,9 @@ public class DailyTaskController {
     public void deleteDailyTask(@PathVariable Long id) {
         dailyTaskService.deleteDailyTask(id);
     }
+
+    @PatchMapping("/{id}/complete")
+    public DailyTaskResponse completeDailyTask(@PathVariable Long id) {
+        return dailyTaskService.completeDailyTask(id);
+    }
 }
