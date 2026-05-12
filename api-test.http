@@ -1,0 +1,79 @@
+
+### Register 1
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "username": "yuhang",
+  "email": "yuhang@test.com",
+  "password": "123456"
+}
+
+### Register 2
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+  "username": "mike",
+  "email": "mike@test.com",
+  "password": "123456"
+}
+
+### Login 1
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "yuhang@test.com",
+  "password": "123456"
+}
+
+### Login 2
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "mike2@test.com",
+  "password": "1234567"
+}
+
+### Daily Task APIs
+PATCH http://localhost:8080/daily-tasks/222/complete
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYxNzE3MSwiZXhwIjoxNzc4NzAzNTcxfQ.xnDK3CErUeCV2V3zLUDB9GtOe5xrkafjRTwXiB5uMlCgrYeBLzNDyfS__NiFERFO
+
+### Get user me info
+GET http://localhost:8080/auth/me
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODUyMzc1MCwiZXhwIjoxNzc4NjEwMTUwfQ.nZ8ySPAlQq6LBqRQm1mLjRsTajgxc_FAqYs2dSktN1osCEIWVUqpHtQQDxCsQl05
+
+### Get All Daily Tasks
+GET http://localhost:8080/daily-tasks
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYyMTE4MCwiZXhwIjoxNzc4NzA3NTgwfQ.lPlTQMVF7WtB4yJ0TXgYMOBXnhsNeybl74dbGIJmpsd1_ujpPTCjrjN6CdStM631
+
+### Get Daily Task by ID
+GET http://localhost:8080/daily-tasks/2
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYyMjA4NywiZXhwIjoxNzc4NzA4NDg3fQ._032H60qdJYc5OJgwXYKSUrTnxmIMm18l2M79yLXvIw7nfPpbcPZtg5wlXXzhmAd
+
+### Update Daily Task
+PUT http://localhost:8080/daily-tasks/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaWtlQHRlc3QuY29tIiwidXNlcklkIjoyLCJpYXQiOjE3Nzg2MTgyNzksImV4cCI6MTc3ODcwNDY3OX0.NYwc1Zno4BNQBnHUkH1RBIrjd-GZKCj5yUa0BlFhu2nWAncjQtWB9-Pqg_NXif1J
+
+{
+  "title": "Updated Push Day",
+  "description": "test",
+  "difficulty": "T3"
+}
+
+### Create Daily Task
+POST http://localhost:8080/daily-tasks
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYyMzA2OSwiZXhwIjoxNzc4NzA5NDY5fQ.PLknr2qVBuGqXjyw64CuxZxuA1vAPKK7qzos8T1wiKAM8FSLG2qHy8wcNtETIWi6
+
+{
+  "description": "test",
+  "difficulty": "T2"
+}
+
+### Delete Daily Task
+DELETE http://localhost:8080/daily-tasks/222
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYxNzE3MSwiZXhwIjoxNzc4NzAzNTcxfQ.xnDK3CErUeCV2V3zLUDB9GtOe5xrkafjRTwXiB5uMlCgrYeBLzNDyfS__NiFERFO
