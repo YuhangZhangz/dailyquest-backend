@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.dailyquest.dto.response.UserProfileResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.example.dailyquest.exception.InvalidCredentialsException;
+import com.example.dailyquest.exception.DuplicateUserException;
 
 @Service
 public class AuthService {
@@ -28,11 +30,11 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (appUserRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateUserException("Email already exists: " + request.email());
         }
 
         if (appUserRepository.existsByUsername(request.username())) {
-            throw new RuntimeException("Username already exists");
+            throw new DuplicateUserException("Username already exists: " + request.username());
         }
 
         AppUser user = new AppUser(
@@ -54,10 +56,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         AppUser user = appUserRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new InvalidCredentialsException());
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException();
         }
 
         return new AuthResponse(
