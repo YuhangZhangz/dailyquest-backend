@@ -11,4 +11,11 @@ public class GlobalExceptionHandler {
     public String handleDailyTaskNotFound(DailyTaskNotFoundException ex) {
         return ex.getMessage();
     }
+    
+    @ExceptionHandler(TaskAlreadyCompletedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleTaskAlreadyCompleted(TaskAlreadyCompletedException ex) {
+        return ex.getMessage();
+    }
+
 }

@@ -3,6 +3,7 @@ package com.example.dailyquest.service;
 import com.example.dailyquest.dto.request.CreateDailyTaskRequest;
 import com.example.dailyquest.dto.response.DailyTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
+import com.example.dailyquest.exception.TaskAlreadyCompletedException;
 import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.DailyTask;
 import com.example.dailyquest.repository.AppUserRepository;
@@ -48,6 +49,10 @@ public class DailyTaskService {
 
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
             .orElseThrow(() -> new DailyTaskNotFoundException(id));
+        
+        if (!task.getActive()) {
+            throw new TaskAlreadyCompletedException(id);
+        }
 
         task.setTitle(request.title());
         task.setDescription(request.description());
@@ -89,6 +94,10 @@ public class DailyTaskService {
 
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
+        
+        if (!task.getActive()) {
+            throw new TaskAlreadyCompletedException(id);
+        }
 
         task.setActive(false);
 
