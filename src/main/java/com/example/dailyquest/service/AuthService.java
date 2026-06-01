@@ -30,11 +30,11 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (appUserRepository.existsByEmail(request.email())) {
-            throw new DuplicateUserException("Email already exists: " + request.email());
+            throw new DuplicateUserException("Email already exists");
         }
 
         if (appUserRepository.existsByUsername(request.username())) {
-            throw new DuplicateUserException("Username already exists: " + request.username());
+            throw new DuplicateUserException("Username already exists");
         }
 
         AppUser user = new AppUser(

@@ -23,7 +23,7 @@ public record RegisterRequest(
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Pattern(
         regexp = "^(?=.*[A-Z])(?=.*[A-Za-z])(?=.*\\d)(?=.*[^A-Za-z0-9])(?!.*(.)\\1{3,})(?!.*(?:012|123|234|345|456|567|678|789)).+$",
-        message = "Password does not meet security requirements"
+        message = "Password must include uppercase and lowercase letters, a number, and a special character"
     )
     String password
 ) {
