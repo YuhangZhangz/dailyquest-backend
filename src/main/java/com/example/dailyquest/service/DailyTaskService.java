@@ -70,7 +70,8 @@ public class DailyTaskService {
         DailyTask task = new DailyTask(
             request.title(),
             request.description(),
-            request.difficulty()
+            request.difficulty(),
+            request.taskType()
         );
 
         task.setUser(currentUser);
@@ -141,6 +142,7 @@ public class DailyTaskService {
             task.getTitle(),
             task.getDescription(),
             task.getDifficulty(),
+            task.getTaskType(),
             task.getBaseXp(),
             task.getActive(),
             task.getCreatedAt()

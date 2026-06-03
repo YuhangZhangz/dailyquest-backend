@@ -20,6 +20,10 @@ public class DailyTask {
     @Column(nullable = false)
     private Difficulty difficulty;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskType taskType;
+
     @Column(nullable = false)
     private Integer baseXp;
 
@@ -37,10 +41,11 @@ public class DailyTask {
         // Default constructor for JPA
     }
 
-    public DailyTask(String title, String description, Difficulty difficulty) {
+    public DailyTask(String title, String description, Difficulty difficulty, TaskType taskType) {
         this.title = title;
         this.description = description;
         this.difficulty = difficulty;
+        this.taskType = taskType;
         this.baseXp = difficulty.getBaseXp();
         this.active = true; // Default to active when created
         this.createdAt = LocalDateTime.now(); // Set creation time
@@ -62,6 +67,10 @@ public class DailyTask {
         return difficulty;
     }
 
+    public TaskType getTaskType() {
+        return taskType;
+    }
+    
     public Integer getBaseXp() {
         return baseXp;
     }
@@ -92,6 +101,10 @@ public class DailyTask {
 
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
+    }
+
+    public void setTaskType(TaskType taskType) {
+        this.taskType = taskType;
     }
 
     public void setBaseXp(Integer baseXp) {

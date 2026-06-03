@@ -76,3 +76,15 @@ Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c
 ### Delete Daily Task
 DELETE http://localhost:8080/daily-tasks/222
 Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc3ODYxNzE3MSwiZXhwIjoxNzc4NzAzNTcxfQ.xnDK3CErUeCV2V3zLUDB9GtOe5xrkafjRTwXiB5uMlCgrYeBLzNDyfS__NiFERFO
+
+### Create Daily Task with taskType
+POST http://localhost:8080/daily-tasks
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc4MDUyNzA3MCwiZXhwIjoxNzgwNjEzNDcwfQ.UYpI_LAsa7wfqhU60WhWM2-qQaESAEn4X8PRgkN6mzNieV03Vml0grC4FI5CTiiD
+
+{
+  "title": "Read Spring Boot",
+  "description": "Learn enum mapping",
+  "difficulty": "T2",
+  "taskType": "DAILY"
+}

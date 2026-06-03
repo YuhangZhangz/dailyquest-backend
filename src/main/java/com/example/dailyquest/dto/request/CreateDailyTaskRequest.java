@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import com.example.dailyquest.model.Difficulty;
+import com.example.dailyquest.model.TaskType;
 
 public record CreateDailyTaskRequest(
     @NotBlank(message = "Title is required")
@@ -12,5 +13,9 @@ public record CreateDailyTaskRequest(
     String description,
 
     @NotNull(message = "Difficulty is required")
-    Difficulty difficulty
+    Difficulty difficulty,
+
+    @NotNull(message = "Task type is required")
+    TaskType taskType
+
 ) {}
