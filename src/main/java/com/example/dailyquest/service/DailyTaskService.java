@@ -129,6 +129,34 @@ public class DailyTaskService {
         return toResponse(updatedTask);
     }
 
+    public DailyTaskResponse revertDailyTask(Long id) {
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
+
+        if (task.getActive()) {
+            return toResponse(task);
+        }
+
+        task.setActive(true);
+
+        int lostXp = task.getBaseXp();
+
+        currentUser.setTotalXp(
+            Math.max(0, currentUser.getTotalXp() - lostXp)
+        );
+
+        int newLevel = (currentUser.getTotalXp() / 100) + 1;
+        currentUser.setLevel(newLevel);
+
+        appUserRepository.save(currentUser);
+
+        DailyTask updatedTask = dailyTaskRepository.save(task);
+
+        return toResponse(updatedTask);
+    }
+
     private AppUser getCurrentUser() {
         return (AppUser) SecurityContextHolder
                 .getContext()

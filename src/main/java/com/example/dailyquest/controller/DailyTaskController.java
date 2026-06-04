@@ -54,4 +54,9 @@ public class DailyTaskController {
     public DailyTaskResponse completeDailyTask(@PathVariable Long id) {
         return dailyTaskService.completeDailyTask(id);
     }
+
+    @PatchMapping("/{id}/revert")
+    public DailyTaskResponse revertDailyTask(@PathVariable Long id) {
+        return dailyTaskService.revertDailyTask(id);
+    }
 }

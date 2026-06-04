@@ -88,3 +88,7 @@ Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c
   "difficulty": "T2",
   "taskType": "DAILY"
 }
+
+### 4. Revert Task
+PATCH http://localhost:8080/daily-tasks/1/revert
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc4MDUyNzA3MCwiZXhwIjoxNzgwNjEzNDcwfQ.UYpI_LAsa7wfqhU60WhWM2-qQaESAEn4X8PRgkN6mzNieV03Vml0grC4FI5CTiiD
