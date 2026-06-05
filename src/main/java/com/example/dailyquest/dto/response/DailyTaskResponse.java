@@ -13,7 +13,8 @@ public record DailyTaskResponse (
     TaskType taskType,
     Integer baseXp,
     Boolean active,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    Integer completedCount
 ) {
 
 }

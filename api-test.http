@@ -92,3 +92,19 @@ Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c
 ### 4. Revert Task
 PATCH http://localhost:8080/daily-tasks/1/revert
 Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc4MDUyNzA3MCwiZXhwIjoxNzgwNjEzNDcwfQ.UYpI_LAsa7wfqhU60WhWM2-qQaESAEn4X8PRgkN6mzNieV03Vml0grC4FI5CTiiD
+
+### Create Habit Task
+POST http://localhost:8080/daily-tasks
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc4MDY5ODkxMSwiZXhwIjoxNzgwNzg1MzExfQ.xmOGWNG3I-PYGc8QxtVmE2TTFAiC5J9g34xIrB1EmxxTHPGhEPa7hnVrD6Qhu2J9
+
+{
+  "title": "Drink Water",
+  "description": "Drink one cup of water",
+  "difficulty": "T1",
+  "taskType": "HABIT"
+}
+
+### Complete Habit Task
+PATCH http://localhost:8080/daily-tasks/7/complete
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJ5dWhhbmdAdGVzdC5jb20iLCJ1c2VySWQiOjEsImlhdCI6MTc4MDY5ODkxMSwiZXhwIjoxNzgwNzg1MzExfQ.xmOGWNG3I-PYGc8QxtVmE2TTFAiC5J9g34xIrB1EmxxTHPGhEPa7hnVrD6Qhu2J9

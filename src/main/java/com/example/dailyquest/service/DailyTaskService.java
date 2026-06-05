@@ -6,6 +6,7 @@ import com.example.dailyquest.exception.DailyTaskNotFoundException;
 import com.example.dailyquest.exception.TaskAlreadyCompletedException;
 import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.DailyTask;
+import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.repository.AppUserRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -92,23 +93,37 @@ public class DailyTaskService {
     }
 
     public DailyTaskResponse completeDailyTask(Long id) {
+        // Get the current user from the security context
         AppUser currentUser = getCurrentUser();
-
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-                .orElseThrow(() -> new DailyTaskNotFoundException(id));
         
-        if (!task.getActive()) {
+        // Find the task by ID and ensure it belongs to the current user
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        .orElseThrow(() -> new DailyTaskNotFoundException(id));
+        
+        // Prevent completed non-habit tasks from being completed again
+        if (task.getTaskType() != TaskType.HABIT && !task.getActive()) {
             throw new TaskAlreadyCompletedException(id);
         }
 
-        task.setActive(false);
-
+        // Calculate XP gain and update user's total XP and level
         int gainedXp = task.getBaseXp();
         currentUser.setTotalXp(currentUser.getTotalXp() + gainedXp);
-
+        
         int newLevel = (currentUser.getTotalXp() / 100) + 1;
         currentUser.setLevel(newLevel);
+        
+        // Habit tasks can be completed repeatedly, so keep them active and track the count.
+        if (task.getTaskType() == TaskType.HABIT) {
+            task.setCompletedCount(task.getCompletedCount() + 1);
 
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
+        }
+
+        task.setActive(false);
+        
         LocalDate today = LocalDate.now();
         LocalDate lastCompletedDate = currentUser.getLastCompletedDate();
 
@@ -174,7 +189,8 @@ public class DailyTaskService {
             task.getTaskType(),
             task.getBaseXp(),
             task.getActive(),
-            task.getCreatedAt()
+            task.getCreatedAt(),
+            task.getCompletedCount()
         );
     }
 }

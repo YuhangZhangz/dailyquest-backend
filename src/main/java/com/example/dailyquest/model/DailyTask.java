@@ -37,6 +37,10 @@ public class DailyTask {
     @JoinColumn(name = "user_id", nullable = false)
     private AppUser user;
 
+    // Track habit completion count for habit tasks
+    @Column(nullable = false)
+    private Integer completedCount = 0;
+
     public DailyTask() {
         // Default constructor for JPA
     }
@@ -86,6 +90,11 @@ public class DailyTask {
     public AppUser getUser() {
         return user;
     }
+    
+    // Habit completion count methods
+    public Integer getCompletedCount() {
+        return completedCount;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -121,6 +130,11 @@ public class DailyTask {
 
     public void setUser(AppUser user) {
         this.user = user;
+    }
+    
+    // Habit completion count methods
+    public void setCompletedCount(Integer completedCount) {
+        this.completedCount = completedCount;
     }
 
 }
