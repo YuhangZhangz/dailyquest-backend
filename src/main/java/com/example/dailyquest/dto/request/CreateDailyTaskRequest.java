@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.example.dailyquest.model.Difficulty;
 import com.example.dailyquest.model.TaskType;
+import java.time.LocalDate;
 
 public record CreateDailyTaskRequest(
     @NotBlank(message = "Title is required")
@@ -16,6 +17,8 @@ public record CreateDailyTaskRequest(
     Difficulty difficulty,
 
     @NotNull(message = "Task type is required")
-    TaskType taskType
+    TaskType taskType,
+
+    LocalDate dueDate
 
 ) {}

@@ -45,6 +45,9 @@ public class DailyTask {
 
     // Track when a daily task was last completed
     private LocalDate lastCompletedDate;
+    
+    // Optional due date for todo tasks
+    private LocalDate dueDate;
 
     public DailyTask() {
         // Default constructor for JPA
@@ -105,6 +108,11 @@ public class DailyTask {
     public LocalDate getLastCompletedDate() {
         return lastCompletedDate;
     }
+    
+    // Optional due date methods
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -150,6 +158,11 @@ public class DailyTask {
     // Track the last completed date for Daily tasks
     public void setLastCompletedDate(LocalDate lastCompletedDate) {
         this.lastCompletedDate = lastCompletedDate;
+    }
+
+    // Optional due date methods
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
 }

@@ -54,6 +54,12 @@ public class DailyTaskService {
         if (!task.getActive()) {
             throw new TaskAlreadyCompletedException(id);
         }
+        
+        if (request.taskType() == TaskType.TODO) {
+            task.setDueDate(request.dueDate());
+        } else {
+            task.setDueDate(null);
+        }
 
         task.setTitle(request.title());
         task.setDescription(request.description());
@@ -77,6 +83,10 @@ public class DailyTaskService {
         );
 
         task.setUser(currentUser);
+        
+        if (request.taskType() == TaskType.TODO) {
+            task.setDueDate(request.dueDate());
+        }
 
         DailyTask savedTask = dailyTaskRepository.save(task);
 
@@ -138,6 +148,7 @@ public class DailyTaskService {
 
             return toResponse(updatedTask);
         }
+        
 
         task.setActive(false);
         
@@ -208,7 +219,8 @@ public class DailyTaskService {
             task.getActive(),
             task.getCreatedAt(),
             task.getCompletedCount(),
-            task.getLastCompletedDate()
+            task.getLastCompletedDate(),
+            task.getDueDate()
         );
     }
 }
