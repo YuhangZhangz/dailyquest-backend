@@ -3,6 +3,7 @@ package com.example.dailyquest.dto.response;
 import com.example.dailyquest.model.Difficulty;
 import com.example.dailyquest.model.TaskType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record DailyTaskResponse (
@@ -14,7 +15,8 @@ public record DailyTaskResponse (
     Integer baseXp,
     Boolean active,
     LocalDateTime createdAt,
-    Integer completedCount
+    Integer completedCount,
+    LocalDate lastCompletedDate
 ) {
 
 }

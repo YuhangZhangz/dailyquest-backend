@@ -1,6 +1,8 @@
 package com.example.dailyquest.model;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -40,6 +42,9 @@ public class DailyTask {
     // Track habit completion count for habit tasks
     @Column(nullable = false)
     private Integer completedCount = 0;
+
+    // Track when a daily task was last completed
+    private LocalDate lastCompletedDate;
 
     public DailyTask() {
         // Default constructor for JPA
@@ -96,6 +101,11 @@ public class DailyTask {
         return completedCount;
     }
 
+    // Daily task last completed date methods
+    public LocalDate getLastCompletedDate() {
+        return lastCompletedDate;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -135,6 +145,11 @@ public class DailyTask {
     // Habit completion count methods
     public void setCompletedCount(Integer completedCount) {
         this.completedCount = completedCount;
+    }
+
+    // Track the last completed date for Daily tasks
+    public void setLastCompletedDate(LocalDate lastCompletedDate) {
+        this.lastCompletedDate = lastCompletedDate;
     }
 
 }

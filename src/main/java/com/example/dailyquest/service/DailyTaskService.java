@@ -100,8 +100,8 @@ public class DailyTaskService {
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
         .orElseThrow(() -> new DailyTaskNotFoundException(id));
         
-        // Prevent completed non-habit tasks from being completed again
-        if (task.getTaskType() != TaskType.HABIT && !task.getActive()) {
+        // For Daily tasks, mark as completed and update streaks
+        if (task.getTaskType() == TaskType.TODO && !task.getActive()) {
             throw new TaskAlreadyCompletedException(id);
         }
 
@@ -114,6 +114,23 @@ public class DailyTaskService {
         
         // Habit tasks can be completed repeatedly, so keep them active and track the count.
         if (task.getTaskType() == TaskType.HABIT) {
+            task.setCompletedCount(task.getCompletedCount() + 1);
+
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
+        }
+        
+        // For Daily tasks, mark as completed and update streaks
+        if(task.getTaskType() == TaskType.DAILY) {
+            LocalDate today = LocalDate.now();
+            if(task.getLastCompletedDate() != null &&
+               task.getLastCompletedDate().isEqual(today)) {
+                throw new TaskAlreadyCompletedException(id);
+            }
+
+            task.setLastCompletedDate(today);
             task.setCompletedCount(task.getCompletedCount() + 1);
 
             appUserRepository.save(currentUser);
@@ -190,7 +207,8 @@ public class DailyTaskService {
             task.getBaseXp(),
             task.getActive(),
             task.getCreatedAt(),
-            task.getCompletedCount()
+            task.getCompletedCount(),
+            task.getLastCompletedDate()
         );
     }
 }
