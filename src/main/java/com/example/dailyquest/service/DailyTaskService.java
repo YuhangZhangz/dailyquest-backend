@@ -11,6 +11,7 @@ import com.example.dailyquest.repository.AppUserRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,8 +22,7 @@ public class DailyTaskService {
     private final AppUserRepository appUserRepository;
 
     public DailyTaskService(DailyTaskRepository dailyTaskRepository,
-                            AppUserRepository appUserRepository
-    ) {
+                            AppUserRepository appUserRepository) {
         this.dailyTaskRepository = dailyTaskRepository;
         this.appUserRepository = appUserRepository;
     }
@@ -31,61 +31,36 @@ public class DailyTaskService {
         AppUser currentUser = getCurrentUser();
 
         return dailyTaskRepository.findByUserId(currentUser.getId())
-            .stream()
-            .map(this::toResponse)
-            .toList();
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     public DailyTaskResponse getDailyTaskById(Long id) {
         AppUser currentUser = getCurrentUser();
 
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-            .orElseThrow(() -> new DailyTaskNotFoundException(id));
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         return toResponse(task);
-    }
-
-    public DailyTaskResponse updateDailyTask(Long id, CreateDailyTaskRequest request) {
-        AppUser currentUser = getCurrentUser();
-
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-            .orElseThrow(() -> new DailyTaskNotFoundException(id));
-        
-        if (!task.getActive()) {
-            throw new TaskAlreadyCompletedException(id);
-        }
-        
-        if (request.taskType() == TaskType.TODO) {
-            task.setDueDate(request.dueDate());
-        } else {
-            task.setDueDate(null);
-        }
-
-        task.setTitle(request.title());
-        task.setDescription(request.description());
-        task.setDifficulty(request.difficulty());
-        task.setBaseXp(request.difficulty().getBaseXp());
-        task.setDueDate(request.dueDate());
-        
-        DailyTask updatedTask = dailyTaskRepository.save(task);
-
-        return toResponse(updatedTask);
     }
 
     public DailyTaskResponse createDailyTask(CreateDailyTaskRequest request) {
         AppUser currentUser = getCurrentUser();
 
         DailyTask task = new DailyTask(
-            request.title(),
-            request.description(),
-            request.difficulty(),
-            request.taskType()
+                request.title(),
+                request.description(),
+                request.difficulty(),
+                request.taskType()
         );
 
         task.setUser(currentUser);
-        
+
         if (request.taskType() == TaskType.TODO) {
             task.setDueDate(request.dueDate());
+        } else {
+            task.setDueDate(null);
         }
 
         DailyTask savedTask = dailyTaskRepository.save(task);
@@ -93,98 +68,99 @@ public class DailyTaskService {
         return toResponse(savedTask);
     }
 
+    public DailyTaskResponse updateDailyTask(Long id, CreateDailyTaskRequest request) {
+        AppUser currentUser = getCurrentUser();
+
+        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
+
+        if (!task.getActive() && task.getTaskType() == TaskType.TODO) {
+            throw new TaskAlreadyCompletedException(id);
+        }
+
+        task.setTitle(request.title());
+        task.setDescription(request.description());
+        task.setDifficulty(request.difficulty());
+        task.setBaseXp(request.difficulty().getBaseXp());
+        task.setTaskType(request.taskType());
+
+        if (request.taskType() == TaskType.TODO) {
+            task.setDueDate(request.dueDate());
+        } else {
+            task.setDueDate(null);
+        }
+
+        DailyTask updatedTask = dailyTaskRepository.save(task);
+
+        return toResponse(updatedTask);
+    }
+
     public void deleteDailyTask(Long id) {
         AppUser currentUser = getCurrentUser();
 
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-            .orElseThrow(() -> new DailyTaskNotFoundException(id));
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         dailyTaskRepository.delete(task);
     }
 
     public DailyTaskResponse completeDailyTask(Long id) {
-        // Get the current user from the security context
         AppUser currentUser = getCurrentUser();
-        
-        // Find the task by ID and ensure it belongs to the current user
+
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
-        .orElseThrow(() -> new DailyTaskNotFoundException(id));
-        
-        // For Daily tasks, mark as completed and update streaks
-        if (task.getTaskType() == TaskType.TODO && !task.getActive()) {
-            throw new TaskAlreadyCompletedException(id);
-        }
+                .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
-        // Calculate XP gain and update user's total XP and level
         int gainedXp = task.getBaseXp();
-        currentUser.setTotalXp(currentUser.getTotalXp() + gainedXp);
-        
-        int newLevel = (currentUser.getTotalXp() / 100) + 1;
-        currentUser.setLevel(newLevel);
-        
-        // Habit tasks can be completed repeatedly, so keep them active and track the count.
+
         if (task.getTaskType() == TaskType.HABIT) {
-            int currentCount = task.getCompletedCount() == null ? 0 : task.getCompletedCount();
+            int currentCount = getSafeCompletedCount(task);
+            task.setCompletedCount(currentCount + 1);
 
-            if (currentCount > 0) {
-                task.setCompletedCount(currentCount - 1);
-
-                int lostXp = task.getBaseXp();
-
-                currentUser.setTotalXp(
-                    Math.max(0, currentUser.getTotalXp() - lostXp)
-                );
-
-                currentUser.setLevel(
-                    (currentUser.getTotalXp() / 100) + 1
-                );
-
-                appUserRepository.save(currentUser);
-            }
-
-            DailyTask updatedTask = dailyTaskRepository.save(task);
-            return toResponse(updatedTask);
-        }
-        
-        // For Daily tasks, mark as completed and update streaks
-        if(task.getTaskType() == TaskType.DAILY) {
-            LocalDate today = LocalDate.now();
-            if(task.getLastCompletedDate() != null &&
-               task.getLastCompletedDate().isEqual(today)) {
-                throw new TaskAlreadyCompletedException(id);
-            }
-
-            task.setLastCompletedDate(today);
-            task.setCompletedCount(task.getCompletedCount() + 1);
+            addXp(currentUser, gainedXp);
 
             appUserRepository.save(currentUser);
             DailyTask updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
-        
 
-        task.setActive(false);
-        
-        LocalDate today = LocalDate.now();
-        LocalDate lastCompletedDate = currentUser.getLastCompletedDate();
+        if (task.getTaskType() == TaskType.DAILY) {
+            LocalDate today = LocalDate.now();
 
-        if (lastCompletedDate == null) {
-            currentUser.setDailyStreak(1);
-        } else if (lastCompletedDate.isEqual(today)) {
-            // Same day completion, do not update streak
-        } else if (lastCompletedDate.plusDays(1).isEqual(today)) {
-            currentUser.setDailyStreak(currentUser.getDailyStreak() + 1);
-        } else {
-            currentUser.setDailyStreak(1);
+            if (task.getLastCompletedDate() != null &&
+                    task.getLastCompletedDate().isEqual(today)) {
+                throw new TaskAlreadyCompletedException(id);
+            }
+
+            int currentCount = getSafeCompletedCount(task);
+            task.setCompletedCount(currentCount + 1);
+            task.setLastCompletedDate(today);
+
+            addXp(currentUser, gainedXp);
+            updateUserStreak(currentUser, today);
+
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
         }
 
-        currentUser.setLastCompletedDate(today);
+        if (task.getTaskType() == TaskType.TODO) {
+            if (!task.getActive()) {
+                throw new TaskAlreadyCompletedException(id);
+            }
 
-        appUserRepository.save(currentUser);
-        DailyTask updatedTask = dailyTaskRepository.save(task);
+            task.setActive(false);
 
-        return toResponse(updatedTask);
+            addXp(currentUser, gainedXp);
+
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
+        }
+
+        return toResponse(task);
     }
 
     public DailyTaskResponse revertDailyTask(Long id) {
@@ -193,52 +169,92 @@ public class DailyTaskService {
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
+        int lostXp = task.getBaseXp();
+
         if (task.getTaskType() == TaskType.HABIT) {
-            int currentCount = task.getCompletedCount() == null ? 0 : task.getCompletedCount();
+            int currentCount = getSafeCompletedCount(task);
+
+            if (currentCount <= 0) {
+                return toResponse(task);
+            }
+
+            task.setCompletedCount(currentCount - 1);
+            removeXp(currentUser, lostXp);
+
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
+        }
+
+        if (task.getTaskType() == TaskType.DAILY) {
+            LocalDate today = LocalDate.now();
+
+            if (task.getLastCompletedDate() == null ||
+                    !task.getLastCompletedDate().isEqual(today)) {
+                return toResponse(task);
+            }
+
+            int currentCount = getSafeCompletedCount(task);
 
             if (currentCount > 0) {
                 task.setCompletedCount(currentCount - 1);
-
-                int lostXp = task.getBaseXp();
-
-                System.out.println("Before XP: " + currentUser.getTotalXp());
-
-                currentUser.setTotalXp(
-                    Math.max(0, currentUser.getTotalXp() - lostXp)
-                );
-
-                System.out.println("After XP: " + currentUser.getTotalXp());
-
-                currentUser.setLevel(
-                    (currentUser.getTotalXp() / 100) + 1
-                );
-
-                appUserRepository.save(currentUser);
             }
 
+            task.setLastCompletedDate(null);
+            removeXp(currentUser, lostXp);
+
+            appUserRepository.save(currentUser);
             DailyTask updatedTask = dailyTaskRepository.save(task);
+
             return toResponse(updatedTask);
         }
-        if (task.getActive()) {
-            return toResponse(task);
+
+        if (task.getTaskType() == TaskType.TODO) {
+            if (task.getActive()) {
+                return toResponse(task);
+            }
+
+            task.setActive(true);
+            removeXp(currentUser, lostXp);
+
+            appUserRepository.save(currentUser);
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+
+            return toResponse(updatedTask);
         }
 
-        task.setActive(true);
+        return toResponse(task);
+    }
 
-        int lostXp = task.getBaseXp();
+    private int getSafeCompletedCount(DailyTask task) {
+        return task.getCompletedCount() == null ? 0 : task.getCompletedCount();
+    }
 
-        currentUser.setTotalXp(
-            Math.max(0, currentUser.getTotalXp() - lostXp)
-        );
+    private void addXp(AppUser user, int xp) {
+        user.setTotalXp(user.getTotalXp() + xp);
+        user.setLevel((user.getTotalXp() / 100) + 1);
+    }
 
-        int newLevel = (currentUser.getTotalXp() / 100) + 1;
-        currentUser.setLevel(newLevel);
+    private void removeXp(AppUser user, int xp) {
+        user.setTotalXp(Math.max(0, user.getTotalXp() - xp));
+        user.setLevel((user.getTotalXp() / 100) + 1);
+    }
 
-        appUserRepository.save(currentUser);
+    private void updateUserStreak(AppUser currentUser, LocalDate today) {
+        LocalDate lastCompletedDate = currentUser.getLastCompletedDate();
 
-        DailyTask updatedTask = dailyTaskRepository.save(task);
+        if (lastCompletedDate == null) {
+            currentUser.setDailyStreak(1);
+        } else if (lastCompletedDate.isEqual(today)) {
+            return;
+        } else if (lastCompletedDate.plusDays(1).isEqual(today)) {
+            currentUser.setDailyStreak(currentUser.getDailyStreak() + 1);
+        } else {
+            currentUser.setDailyStreak(1);
+        }
 
-        return toResponse(updatedTask);
+        currentUser.setLastCompletedDate(today);
     }
 
     private AppUser getCurrentUser() {
@@ -250,17 +266,17 @@ public class DailyTaskService {
 
     private DailyTaskResponse toResponse(DailyTask task) {
         return new DailyTaskResponse(
-            task.getId(),
-            task.getTitle(),
-            task.getDescription(),
-            task.getDifficulty(),
-            task.getTaskType(),
-            task.getBaseXp(),
-            task.getActive(),
-            task.getCreatedAt(),
-            task.getCompletedCount(),
-            task.getLastCompletedDate(),
-            task.getDueDate()
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getDifficulty(),
+                task.getTaskType(),
+                task.getBaseXp(),
+                task.getActive(),
+                task.getCreatedAt(),
+                task.getCompletedCount(),
+                task.getLastCompletedDate(),
+                task.getDueDate()
         );
     }
 }
