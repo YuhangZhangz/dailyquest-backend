@@ -65,6 +65,7 @@ public class DailyTaskService {
         task.setDescription(request.description());
         task.setDifficulty(request.difficulty());
         task.setBaseXp(request.difficulty().getBaseXp());
+        task.setDueDate(request.dueDate());
         
         DailyTask updatedTask = dailyTaskRepository.save(task);
 
