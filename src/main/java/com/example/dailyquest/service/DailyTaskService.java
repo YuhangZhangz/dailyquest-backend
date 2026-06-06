@@ -124,11 +124,25 @@ public class DailyTaskService {
         
         // Habit tasks can be completed repeatedly, so keep them active and track the count.
         if (task.getTaskType() == TaskType.HABIT) {
-            task.setCompletedCount(task.getCompletedCount() + 1);
+            int currentCount = task.getCompletedCount() == null ? 0 : task.getCompletedCount();
 
-            appUserRepository.save(currentUser);
+            if (currentCount > 0) {
+                task.setCompletedCount(currentCount - 1);
+
+                int lostXp = task.getBaseXp();
+
+                currentUser.setTotalXp(
+                    Math.max(0, currentUser.getTotalXp() - lostXp)
+                );
+
+                currentUser.setLevel(
+                    (currentUser.getTotalXp() / 100) + 1
+                );
+
+                appUserRepository.save(currentUser);
+            }
+
             DailyTask updatedTask = dailyTaskRepository.save(task);
-
             return toResponse(updatedTask);
         }
         
@@ -179,6 +193,32 @@ public class DailyTaskService {
         DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
+        if (task.getTaskType() == TaskType.HABIT) {
+            int currentCount = task.getCompletedCount() == null ? 0 : task.getCompletedCount();
+
+            if (currentCount > 0) {
+                task.setCompletedCount(currentCount - 1);
+
+                int lostXp = task.getBaseXp();
+
+                System.out.println("Before XP: " + currentUser.getTotalXp());
+
+                currentUser.setTotalXp(
+                    Math.max(0, currentUser.getTotalXp() - lostXp)
+                );
+
+                System.out.println("After XP: " + currentUser.getTotalXp());
+
+                currentUser.setLevel(
+                    (currentUser.getTotalXp() / 100) + 1
+                );
+
+                appUserRepository.save(currentUser);
+            }
+
+            DailyTask updatedTask = dailyTaskRepository.save(task);
+            return toResponse(updatedTask);
+        }
         if (task.getActive()) {
             return toResponse(task);
         }
