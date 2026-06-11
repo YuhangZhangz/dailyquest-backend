@@ -2,6 +2,7 @@ package com.example.dailyquest.controller;
 
 import com.example.dailyquest.dto.request.CreateDailyTaskRequest;
 import com.example.dailyquest.dto.response.DailyTaskResponse;
+import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.service.DailyTaskService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -58,5 +59,13 @@ public class DailyTaskController {
     @PatchMapping("/{id}/revert")
     public DailyTaskResponse revertDailyTask(@PathVariable Long id) {
         return dailyTaskService.revertDailyTask(id);
+    }
+
+    @PatchMapping("/{taskType}/sort-order")
+    public List<DailyTaskResponse> updateSortOrder(
+            @PathVariable TaskType taskType,
+            @RequestBody List<Long> taskIds
+    ) {
+        return dailyTaskService.updateSortOrder(taskType, taskIds);
     }
 }

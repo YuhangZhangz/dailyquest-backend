@@ -34,7 +34,10 @@ public class DailyTask {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-
+    
+    @Column(nullable = false)
+    private Integer sortOrder = 0;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private AppUser user;
@@ -95,6 +98,10 @@ public class DailyTask {
         return createdAt;
     }
 
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
     public AppUser getUser() {
         return user;
     }
@@ -146,6 +153,10 @@ public class DailyTask {
         this.createdAt = createdAt;
     }
 
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+    
     public void setUser(AppUser user) {
         this.user = user;
     }

@@ -17,7 +17,8 @@ public record DailyTaskResponse (
     LocalDateTime createdAt,
     Integer completedCount,
     LocalDate lastCompletedDate,
-    LocalDate dueDate
+    LocalDate dueDate,
+    Integer sortOrder
 ) {
 
 }

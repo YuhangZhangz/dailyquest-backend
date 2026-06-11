@@ -30,7 +30,8 @@ public class DailyTaskService {
     public List<DailyTaskResponse> getAllDailyTasks() {
         AppUser currentUser = getCurrentUser();
 
-        return dailyTaskRepository.findByUserId(currentUser.getId())
+        return dailyTaskRepository
+                .findByUserIdOrderByTaskTypeAscSortOrderAsc(currentUser.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -56,6 +57,11 @@ public class DailyTaskService {
         );
 
         task.setUser(currentUser);
+        Long taskCount = dailyTaskRepository.countByUserIdAndTaskType(
+                currentUser.getId(),
+                request.taskType()
+        );
+        task.setSortOrder(taskCount.intValue());
 
         if (request.taskType() == TaskType.TODO) {
             task.setDueDate(request.dueDate());
@@ -104,6 +110,36 @@ public class DailyTaskService {
         dailyTaskRepository.delete(task);
     }
 
+    // Implement the updateSortOrder method
+    public List<DailyTaskResponse> updateSortOrder(
+            TaskType taskType,
+            List<Long> taskIds
+    ) {
+        System.out.println(taskType);
+        System.out.println(taskIds);
+        
+        AppUser currentUser = getCurrentUser();
+
+        for (int i = 0; i < taskIds.size(); i++) {
+            Long taskId = taskIds.get(i);
+
+            DailyTask task = dailyTaskRepository
+                    .findByIdAndUserId(taskId, currentUser.getId())
+                    .orElseThrow(() -> new DailyTaskNotFoundException(taskId));
+
+            task.setSortOrder(i);
+            dailyTaskRepository.save(task);
+        }
+
+        return dailyTaskRepository
+                .findByUserIdAndTaskTypeOrderBySortOrderAsc(
+                        currentUser.getId(),
+                        taskType
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
     public DailyTaskResponse completeDailyTask(Long id) {
         AppUser currentUser = getCurrentUser();
 
@@ -276,7 +312,8 @@ public class DailyTaskService {
                 task.getCreatedAt(),
                 task.getCompletedCount(),
                 task.getLastCompletedDate(),
-                task.getDueDate()
+                task.getDueDate(),
+                task.getSortOrder()
         );
     }
 }

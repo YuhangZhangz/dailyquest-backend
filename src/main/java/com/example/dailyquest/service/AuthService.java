@@ -72,10 +72,14 @@ public class AuthService {
     }
 
     public UserProfileResponse getCurrentUserProfile() {
-        AppUser currentUser = (AppUser) SecurityContextHolder
+        Object principal = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
+
+        if (!(principal instanceof AppUser currentUser)) {
+            throw new InvalidCredentialsException();
+        }
 
         return new UserProfileResponse(
                 currentUser.getId(),
