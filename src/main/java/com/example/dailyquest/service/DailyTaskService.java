@@ -268,13 +268,17 @@ public class DailyTaskService {
     }
 
     private void addXp(AppUser user, int xp) {
-        user.setTotalXp(user.getTotalXp() + xp);
-        user.setLevel((user.getTotalXp() / 100) + 1);
+        int newTotalXp = user.getTotalXp() + xp;
+
+        user.setTotalXp(newTotalXp);
+        user.setLevel(calculateLevel(newTotalXp));
     }
 
     private void removeXp(AppUser user, int xp) {
-        user.setTotalXp(Math.max(0, user.getTotalXp() - xp));
-        user.setLevel((user.getTotalXp() / 100) + 1);
+        int newTotalXp = Math.max(0, user.getTotalXp() - xp);
+
+        user.setTotalXp(newTotalXp);
+        user.setLevel(calculateLevel(newTotalXp));
     }
 
     private void updateUserStreak(AppUser currentUser, LocalDate today) {
@@ -291,6 +295,22 @@ public class DailyTaskService {
         }
 
         currentUser.setLastCompletedDate(today);
+    }
+
+    private int calculateLevel(int totalXp) {
+        int level = 1;
+        int remainingXp = totalXp;
+
+        while (remainingXp >= getRequiredXpForLevel(level)) {
+            remainingXp -= getRequiredXpForLevel(level);
+            level++;
+        }
+
+        return level;
+    }
+
+    private int getRequiredXpForLevel(int level) {
+        return 100 + (level - 1) * 50;
     }
 
     private AppUser getCurrentUser() {
