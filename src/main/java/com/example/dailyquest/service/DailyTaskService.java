@@ -2,10 +2,11 @@ package com.example.dailyquest.service;
 
 import com.example.dailyquest.dto.request.CreateDailyTaskRequest;
 import com.example.dailyquest.dto.response.DailyTaskResponse;
+import com.example.dailyquest.dto.response.SubTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
 import com.example.dailyquest.exception.TaskAlreadyCompletedException;
 import com.example.dailyquest.model.AppUser;
-import com.example.dailyquest.model.DailyTask;
+import com.example.dailyquest.model.Task;
 import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.repository.AppUserRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
@@ -40,7 +41,7 @@ public class DailyTaskService {
     public DailyTaskResponse getDailyTaskById(Long id) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         return toResponse(task);
@@ -49,7 +50,7 @@ public class DailyTaskService {
     public DailyTaskResponse createDailyTask(CreateDailyTaskRequest request) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = new DailyTask(
+        Task task = new Task(
                 request.title(),
                 request.description(),
                 request.difficulty(),
@@ -69,7 +70,7 @@ public class DailyTaskService {
             task.setDueDate(null);
         }
 
-        DailyTask savedTask = dailyTaskRepository.save(task);
+        Task savedTask = dailyTaskRepository.save(task);
 
         return toResponse(savedTask);
     }
@@ -77,7 +78,7 @@ public class DailyTaskService {
     public DailyTaskResponse updateDailyTask(Long id, CreateDailyTaskRequest request) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         if (!task.getActive() && task.getTaskType() == TaskType.TODO) {
@@ -96,7 +97,7 @@ public class DailyTaskService {
             task.setDueDate(null);
         }
 
-        DailyTask updatedTask = dailyTaskRepository.save(task);
+        Task updatedTask = dailyTaskRepository.save(task);
 
         return toResponse(updatedTask);
     }
@@ -104,7 +105,7 @@ public class DailyTaskService {
     public void deleteDailyTask(Long id) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         dailyTaskRepository.delete(task);
@@ -123,7 +124,7 @@ public class DailyTaskService {
         for (int i = 0; i < taskIds.size(); i++) {
             Long taskId = taskIds.get(i);
 
-            DailyTask task = dailyTaskRepository
+            Task task = dailyTaskRepository
                     .findByIdAndUserId(taskId, currentUser.getId())
                     .orElseThrow(() -> new DailyTaskNotFoundException(taskId));
 
@@ -143,7 +144,7 @@ public class DailyTaskService {
     public DailyTaskResponse completeDailyTask(Long id) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         int gainedXp = task.getBaseXp();
@@ -155,7 +156,7 @@ public class DailyTaskService {
             addXp(currentUser, gainedXp);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -176,7 +177,7 @@ public class DailyTaskService {
             updateUserStreak(currentUser, today);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -191,7 +192,7 @@ public class DailyTaskService {
             addXp(currentUser, gainedXp);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -202,7 +203,7 @@ public class DailyTaskService {
     public DailyTaskResponse revertDailyTask(Long id) {
         AppUser currentUser = getCurrentUser();
 
-        DailyTask task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
+        Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
         int lostXp = task.getBaseXp();
@@ -218,7 +219,7 @@ public class DailyTaskService {
             removeXp(currentUser, lostXp);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -241,7 +242,7 @@ public class DailyTaskService {
             removeXp(currentUser, lostXp);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -255,7 +256,7 @@ public class DailyTaskService {
             removeXp(currentUser, lostXp);
 
             appUserRepository.save(currentUser);
-            DailyTask updatedTask = dailyTaskRepository.save(task);
+            Task updatedTask = dailyTaskRepository.save(task);
 
             return toResponse(updatedTask);
         }
@@ -263,7 +264,7 @@ public class DailyTaskService {
         return toResponse(task);
     }
 
-    private int getSafeCompletedCount(DailyTask task) {
+    private int getSafeCompletedCount(Task task) {
         return task.getCompletedCount() == null ? 0 : task.getCompletedCount();
     }
 
@@ -320,7 +321,7 @@ public class DailyTaskService {
                 .getPrincipal();
     }
 
-    private DailyTaskResponse toResponse(DailyTask task) {
+    private DailyTaskResponse toResponse(Task task) {
         return new DailyTaskResponse(
                 task.getId(),
                 task.getTitle(),
@@ -333,7 +334,14 @@ public class DailyTaskService {
                 task.getCompletedCount(),
                 task.getLastCompletedDate(),
                 task.getDueDate(),
-                task.getSortOrder()
+                task.getSortOrder(),
+                task.getSubTasks().stream()
+                    .map(subTask -> new SubTaskResponse(
+                        subTask.getId(),
+                        subTask.getTitle(),
+                        subTask.isCompleted()
+                    ))
+                    .toList()
         );
     }
 }

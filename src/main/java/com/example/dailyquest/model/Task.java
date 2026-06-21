@@ -5,9 +5,12 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-public class DailyTask {
+@Table(name = "daily_task")
+public class Task {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,10 +40,6 @@ public class DailyTask {
     
     @Column(nullable = false)
     private Integer sortOrder = 0;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private AppUser user;
 
     // Track habit completion count for habit tasks
     @Column(nullable = false)
@@ -52,11 +51,18 @@ public class DailyTask {
     // Optional due date for todo tasks
     private LocalDate dueDate;
 
-    public DailyTask() {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
+
+    @OneToMany(mappedBy = "dailyTask", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubTask> subTasks = new ArrayList<>();
+
+    public Task() {
         // Default constructor for JPA
     }
 
-    public DailyTask(String title, String description, Difficulty difficulty, TaskType taskType) {
+    public Task(String title, String description, Difficulty difficulty, TaskType taskType) {
         this.title = title;
         this.description = description;
         this.difficulty = difficulty;
@@ -120,6 +126,10 @@ public class DailyTask {
     public LocalDate getDueDate() {
         return dueDate;
     }
+    
+    public List<SubTask> getSubTasks() {
+        return subTasks;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -174,6 +184,10 @@ public class DailyTask {
     // Optional due date methods
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public void setSubTasks(List<SubTask> subTasks) {
+        this.subTasks = subTasks;
     }
 
 }
