@@ -21,18 +21,26 @@ public class AppUser {
     @Column(nullable = false)
     private String passwordHash;
 
+    // Track total XP earned by the user
     @Column(nullable = false)
-    private Integer totalXp = 0; // Track total XP earned by the user
-
-    @Column(nullable = false)
-    private Integer level = 1; // Track user level based on XP
-
-    @Column(nullable = false)
-    private Integer dailyStreak = 0; // Track the user's current daily streak
-
-    @Column
-    private LocalDate lastCompletedDate; // Track the last date the user completed a task for streak calculation
+    private Integer totalXp = 0; 
     
+    // Track user level based on XP
+    @Column(nullable = false)
+    private Integer level = 1;
+
+    // Track the user's current daily streak
+    @Column(nullable = false)
+    private Integer dailyStreak = 0;
+
+    // Track the last date the user completed a task for streak calculation
+    @Column
+    private LocalDate lastCompletedDate;
+    
+    // User's current coin balance
+    @Column(nullable = false)
+    private int coinBalance = 0;
+
     public AppUser() {}
 
     public AppUser(String username, String email, String passwordHash) {
@@ -43,6 +51,7 @@ public class AppUser {
         this.level = 1;
         this.dailyStreak = 0;
         this.lastCompletedDate = null;
+        this.coinBalance = 0;
 
     }
 
@@ -78,6 +87,10 @@ public class AppUser {
         return lastCompletedDate;
     }
 
+    public int getCoinBalance() {
+        return coinBalance;
+    }
+
     public void setTotalXp(Integer totalXp) {
         this.totalXp = totalXp;
     }
@@ -92,6 +105,10 @@ public class AppUser {
 
     public void setLastCompletedDate(LocalDate lastCompletedDate) {
         this.lastCompletedDate = lastCompletedDate;
+    }
+
+    public void setCoinBalance(int coinBalance) {
+        this.coinBalance = coinBalance;
     }
     
 }

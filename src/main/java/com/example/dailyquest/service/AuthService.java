@@ -87,7 +87,8 @@ public class AuthService {
                 currentUser.getEmail(),
                 currentUser.getTotalXp(),
                 currentUser.getLevel(),
-                currentUser.getDailyStreak()
+                currentUser.getDailyStreak(),
+                currentUser.getCoinBalance()
         );
     }
 }

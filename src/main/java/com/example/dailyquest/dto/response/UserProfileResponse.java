@@ -6,6 +6,7 @@ public record UserProfileResponse(
         String email,
         Integer totalXp,
         Integer level,
-        Integer dailyStreak
+        Integer dailyStreak,
+        int coinBalance
 ) {
 }

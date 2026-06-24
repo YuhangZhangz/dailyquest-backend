@@ -146,14 +146,19 @@ public class DailyTaskService {
 
         Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
-
+        
+        // XP earned when completing the task
         int gainedXp = task.getBaseXp();
+        
+        // Coins earned when completing the task
+        int gainedCoins = task.getDifficulty().getCoinReward();
 
         if (task.getTaskType() == TaskType.HABIT) {
             int currentCount = getSafeCompletedCount(task);
             task.setCompletedCount(currentCount + 1);
 
             addXp(currentUser, gainedXp);
+            addCoins(currentUser, gainedCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -175,6 +180,7 @@ public class DailyTaskService {
 
             addXp(currentUser, gainedXp);
             updateUserStreak(currentUser, today);
+            addCoins(currentUser, gainedCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -190,6 +196,7 @@ public class DailyTaskService {
             task.setActive(false);
 
             addXp(currentUser, gainedXp);
+            addCoins(currentUser, gainedCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -206,7 +213,11 @@ public class DailyTaskService {
         Task task = dailyTaskRepository.findByIdAndUserId(id, currentUser.getId())
                 .orElseThrow(() -> new DailyTaskNotFoundException(id));
 
+        // XP removed when reverting the task
         int lostXp = task.getBaseXp();
+
+        // Coins removed when reverting the task
+        int lostCoins = task.getDifficulty().getCoinReward();
 
         if (task.getTaskType() == TaskType.HABIT) {
             int currentCount = getSafeCompletedCount(task);
@@ -217,6 +228,7 @@ public class DailyTaskService {
 
             task.setCompletedCount(currentCount - 1);
             removeXp(currentUser, lostXp);
+            removeCoins(currentUser, lostCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -240,6 +252,7 @@ public class DailyTaskService {
 
             task.setLastCompletedDate(null);
             removeXp(currentUser, lostXp);
+            removeCoins(currentUser, lostCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -254,6 +267,7 @@ public class DailyTaskService {
 
             task.setActive(true);
             removeXp(currentUser, lostXp);
+            removeCoins(currentUser, lostCoins);
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -280,6 +294,17 @@ public class DailyTaskService {
 
         user.setTotalXp(newTotalXp);
         user.setLevel(calculateLevel(newTotalXp));
+    }
+
+    // Add coins to the user's balance
+    private void addCoins(AppUser user, int coins) {
+        user.setCoinBalance(user.getCoinBalance() + coins);
+    }
+
+    
+    private void removeCoins(AppUser user, int coins) {
+        int newCoinBalance = Math.max(0, user.getCoinBalance() - coins);
+        user.setCoinBalance(newCoinBalance);
     }
 
     private void updateUserStreak(AppUser currentUser, LocalDate today) {
