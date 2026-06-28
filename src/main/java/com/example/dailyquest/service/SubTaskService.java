@@ -1,6 +1,8 @@
 package com.example.dailyquest.service;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.dailyquest.dto.request.CreateSubTaskRequest;
 import com.example.dailyquest.dto.response.SubTaskResponse;
@@ -11,7 +13,7 @@ import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.repository.DailyTaskRepository;
 import com.example.dailyquest.repository.SubTaskRepository;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.List;
 
 @Service
 public class SubTaskService {
@@ -43,13 +45,8 @@ public class SubTaskService {
         AppUser currentUser = getCurrentUser();
 
         // Find parent task
-        Task task = dailyTaskRepository.findById(taskId)
+        Task task = dailyTaskRepository.findByIdAndUserId(taskId, currentUser.getId())
             .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        // Verify task ownership
-        if (!task.getUser().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Not allowed");
-        }
 
         // Only DAILY and TODO support subtasks
         if (task.getTaskType() == TaskType.HABIT) {
@@ -60,6 +57,7 @@ public class SubTaskService {
         SubTask subTask = new SubTask();
         subTask.setTitle(request.title());
         subTask.setCompleted(false);
+        subTask.setSortOrder(subTaskRepository.countByDailyTaskId(taskId).intValue());
 
         // Link subtask to parent task
         subTask.setDailyTask(task);
@@ -69,6 +67,38 @@ public class SubTaskService {
 
         // Convert Entity -> DTO
         return mapToResponse(saved);
+    }
+
+    @Transactional
+    public List<SubTaskResponse> updateSortOrder(Long taskId, List<Long> subTaskIds) {
+        AppUser currentUser = getCurrentUser();
+
+        Task task = dailyTaskRepository.findByIdAndUserId(taskId, currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (task.getTaskType() == TaskType.HABIT) {
+            throw new RuntimeException("Habits do not support subtasks");
+        }
+
+        for (int i = 0; i < subTaskIds.size(); i++) {
+            Long subTaskId = subTaskIds.get(i);
+
+            SubTask subTask = subTaskRepository.findById(subTaskId)
+                    .orElseThrow(() -> new RuntimeException("Subtask not found"));
+
+            if (!subTask.getDailyTask().getId().equals(taskId) ||
+                    !subTask.getDailyTask().getUser().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Subtask does not belong to this task");
+            }
+
+            subTask.setSortOrder(i);
+            subTaskRepository.save(subTask);
+        }
+
+        return subTaskRepository.findByDailyTaskIdOrderBySortOrderAsc(taskId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     /**
@@ -126,7 +156,8 @@ public class SubTaskService {
         return new SubTaskResponse(
             subTask.getId(),
             subTask.getTitle(),
-            subTask.isCompleted()
+            subTask.isCompleted(),
+            subTask.getSortOrder()
         );
     }
 

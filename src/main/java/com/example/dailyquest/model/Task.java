@@ -56,6 +56,7 @@ public class Task {
     private AppUser user;
 
     @OneToMany(mappedBy = "dailyTask", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC, id ASC")
     private List<SubTask> subTasks = new ArrayList<>();
 
     public Task() {

@@ -6,6 +6,8 @@ import com.example.dailyquest.dto.request.CreateSubTaskRequest;
 import com.example.dailyquest.dto.response.SubTaskResponse;
 import com.example.dailyquest.service.SubTaskService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/subtasks")
 public class SubTaskController {
@@ -33,6 +35,14 @@ public class SubTaskController {
         @RequestBody CreateSubTaskRequest request
     ) {
         return subTaskService.createSubTask(taskId, request);
+    }
+
+    @PatchMapping("/task/{taskId}/sort-order")
+    public List<SubTaskResponse> updateSortOrder(
+            @PathVariable Long taskId,
+            @RequestBody List<Long> subTaskIds
+    ) {
+        return subTaskService.updateSortOrder(taskId, subTaskIds);
     }
 
     /**

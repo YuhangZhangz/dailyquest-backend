@@ -6,6 +6,7 @@ import com.example.dailyquest.dto.response.SubTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
 import com.example.dailyquest.exception.TaskAlreadyCompletedException;
 import com.example.dailyquest.model.AppUser;
+import com.example.dailyquest.model.SubTask;
 import com.example.dailyquest.model.Task;
 import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.repository.AppUserRepository;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -361,10 +363,13 @@ public class DailyTaskService {
                 task.getDueDate(),
                 task.getSortOrder(),
                 task.getSubTasks().stream()
+                    .sorted(Comparator.comparingInt((SubTask subTask) -> subTask.getSortOrder() == null ? 0 : subTask.getSortOrder())
+                            .thenComparingLong(SubTask::getId))
                     .map(subTask -> new SubTaskResponse(
                         subTask.getId(),
                         subTask.getTitle(),
-                        subTask.isCompleted()
+                        subTask.isCompleted(),
+                        subTask.getSortOrder()
                     ))
                     .toList()
         );

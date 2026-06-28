@@ -22,9 +22,20 @@ public class SubTask {
 
     private Boolean completed = false;
 
+    @Column
+    private Integer sortOrder = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_task_id", nullable = false)
     private Task dailyTask;
+
+    @PrePersist
+    @PreUpdate
+    public void ensureSortOrder() {
+        if (sortOrder == null) {
+            sortOrder = 0;
+        }
+    }
 
     public Long getId() {
         return id;
@@ -38,6 +49,10 @@ public class SubTask {
         return completed;
     }
 
+    public Integer getSortOrder() {
+        return sortOrder;
+    }
+
     public Task getDailyTask() {
         return dailyTask;
     }
@@ -48,6 +63,10 @@ public class SubTask {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
+    }
+
+    public void setSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
     }
 
     public void setDailyTask(Task dailyTask) {
