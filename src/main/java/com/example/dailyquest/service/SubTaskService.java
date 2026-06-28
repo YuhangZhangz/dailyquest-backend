@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.dailyquest.dto.request.CreateSubTaskRequest;
+import com.example.dailyquest.dto.request.UpdateSubTaskRequest;
 import com.example.dailyquest.dto.response.SubTaskResponse;
 import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.SubTask;
@@ -99,6 +100,28 @@ public class SubTaskService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    /**
+     * Update the title of a subtask.
+     */
+    public SubTaskResponse updateSubTask(Long subTaskId, UpdateSubTaskRequest request) {
+
+        AppUser currentUser = getCurrentUser();
+
+        SubTask subTask = subTaskRepository.findById(subTaskId)
+            .orElseThrow(() -> new RuntimeException("Subtask not found"));
+
+        // Verify ownership through parent task
+        if (!subTask.getDailyTask().getUser().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Not allowed");
+        }
+
+        subTask.setTitle(request.title().trim());
+
+        SubTask saved = subTaskRepository.save(subTask);
+
+        return mapToResponse(saved);
     }
 
     /**
