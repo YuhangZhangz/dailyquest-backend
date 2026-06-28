@@ -6,10 +6,14 @@ import com.example.dailyquest.dto.response.SubTaskResponse;
 import com.example.dailyquest.exception.DailyTaskNotFoundException;
 import com.example.dailyquest.exception.TaskAlreadyCompletedException;
 import com.example.dailyquest.model.AppUser;
+import com.example.dailyquest.model.CoinTransaction;
+import com.example.dailyquest.model.CoinTransactionSourceType;
+import com.example.dailyquest.model.CoinTransactionType;
 import com.example.dailyquest.model.SubTask;
 import com.example.dailyquest.model.Task;
 import com.example.dailyquest.model.TaskType;
 import com.example.dailyquest.repository.AppUserRepository;
+import com.example.dailyquest.repository.CoinTransactionRepository;
 import com.example.dailyquest.repository.DailyTaskRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,11 +27,14 @@ public class DailyTaskService {
 
     private final DailyTaskRepository dailyTaskRepository;
     private final AppUserRepository appUserRepository;
+    private final CoinTransactionRepository coinTransactionRepository;
 
     public DailyTaskService(DailyTaskRepository dailyTaskRepository,
-                            AppUserRepository appUserRepository) {
+                            AppUserRepository appUserRepository,
+                            CoinTransactionRepository coinTransactionRepository) {
         this.dailyTaskRepository = dailyTaskRepository;
         this.appUserRepository = appUserRepository;
+        this.coinTransactionRepository = coinTransactionRepository;
     }
 
     public List<DailyTaskResponse> getAllDailyTasks() {
@@ -161,6 +168,14 @@ public class DailyTaskService {
 
             addXp(currentUser, gainedXp);
             addCoins(currentUser, gainedCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    gainedCoins,
+                    CoinTransactionType.TASK_REWARD,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Completed task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -183,6 +198,14 @@ public class DailyTaskService {
             addXp(currentUser, gainedXp);
             updateUserStreak(currentUser, today);
             addCoins(currentUser, gainedCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    gainedCoins,
+                    CoinTransactionType.TASK_REWARD,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Completed task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -199,6 +222,14 @@ public class DailyTaskService {
 
             addXp(currentUser, gainedXp);
             addCoins(currentUser, gainedCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    gainedCoins,
+                    CoinTransactionType.TASK_REWARD,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Completed task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -231,6 +262,14 @@ public class DailyTaskService {
             task.setCompletedCount(currentCount - 1);
             removeXp(currentUser, lostXp);
             removeCoins(currentUser, lostCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    -lostCoins,
+                    CoinTransactionType.TASK_REVERT,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Reverted task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -255,6 +294,14 @@ public class DailyTaskService {
             task.setLastCompletedDate(null);
             removeXp(currentUser, lostXp);
             removeCoins(currentUser, lostCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    -lostCoins,
+                    CoinTransactionType.TASK_REVERT,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Reverted task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -270,6 +317,14 @@ public class DailyTaskService {
             task.setActive(true);
             removeXp(currentUser, lostXp);
             removeCoins(currentUser, lostCoins);
+            recordCoinTransaction(
+                    currentUser,
+                    -lostCoins,
+                    CoinTransactionType.TASK_REVERT,
+                    CoinTransactionSourceType.TASK,
+                    task.getId(),
+                    "Reverted task: " + task.getTitle()
+            );
 
             appUserRepository.save(currentUser);
             Task updatedTask = dailyTaskRepository.save(task);
@@ -303,10 +358,28 @@ public class DailyTaskService {
         user.setCoinBalance(user.getCoinBalance() + coins);
     }
 
-    
     private void removeCoins(AppUser user, int coins) {
         int newCoinBalance = Math.max(0, user.getCoinBalance() - coins);
         user.setCoinBalance(newCoinBalance);
+    }
+
+    private void recordCoinTransaction(
+            AppUser user,
+            int amount,
+            CoinTransactionType type,
+            CoinTransactionSourceType sourceType,
+            Long sourceId,
+            String description
+    ) {
+        coinTransactionRepository.save(new CoinTransaction(
+                user,
+                amount,
+                user.getCoinBalance(),
+                type,
+                sourceType,
+                sourceId,
+                description
+        ));
     }
 
     private void updateUserStreak(AppUser currentUser, LocalDate today) {
