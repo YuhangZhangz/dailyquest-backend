@@ -1,6 +1,7 @@
 package com.example.dailyquest.dto.response;
 
 import com.example.dailyquest.model.Difficulty;
+import com.example.dailyquest.model.GrowthCategory;
 import com.example.dailyquest.model.TaskType;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ public record DailyTaskResponse (
     String description,
     Difficulty difficulty,
     TaskType taskType,
+    GrowthCategory growthCategory,
     Integer baseXp,
     Boolean active,
     LocalDateTime createdAt,

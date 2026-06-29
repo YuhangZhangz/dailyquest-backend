@@ -9,6 +9,7 @@ import com.example.dailyquest.model.AppUser;
 import com.example.dailyquest.model.CoinTransaction;
 import com.example.dailyquest.model.CoinTransactionSourceType;
 import com.example.dailyquest.model.CoinTransactionType;
+import com.example.dailyquest.model.GrowthCategory;
 import com.example.dailyquest.model.SubTask;
 import com.example.dailyquest.model.Task;
 import com.example.dailyquest.model.TaskType;
@@ -67,6 +68,7 @@ public class DailyTaskService {
         );
 
         task.setUser(currentUser);
+        task.setGrowthCategory(resolveGrowthCategory(request));
         Long taskCount = dailyTaskRepository.countByUserIdAndTaskType(
                 currentUser.getId(),
                 request.taskType()
@@ -99,6 +101,7 @@ public class DailyTaskService {
         task.setDifficulty(request.difficulty());
         task.setBaseXp(request.difficulty().getBaseXp());
         task.setTaskType(request.taskType());
+        task.setGrowthCategory(resolveGrowthCategory(request));
 
         if (request.taskType() == TaskType.TODO) {
             task.setDueDate(request.dueDate());
@@ -421,6 +424,14 @@ public class DailyTaskService {
                 .getPrincipal();
     }
 
+    private GrowthCategory resolveGrowthCategory(CreateDailyTaskRequest request) {
+        if (request.taskType() != TaskType.DAILY || request.growthCategory() == null) {
+            return GrowthCategory.NONE;
+        }
+
+        return request.growthCategory();
+    }
+
     private DailyTaskResponse toResponse(Task task) {
         return new DailyTaskResponse(
                 task.getId(),
@@ -428,6 +439,7 @@ public class DailyTaskService {
                 task.getDescription(),
                 task.getDifficulty(),
                 task.getTaskType(),
+                task.getGrowthCategory() == null ? GrowthCategory.NONE : task.getGrowthCategory(),
                 task.getBaseXp(),
                 task.getActive(),
                 task.getCreatedAt(),

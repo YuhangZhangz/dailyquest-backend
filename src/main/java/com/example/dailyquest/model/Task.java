@@ -30,6 +30,10 @@ public class Task {
     @Column(nullable = false)
     private TaskType taskType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "growth_category", nullable = false, length = 30)
+    private GrowthCategory growthCategory = GrowthCategory.NONE;
+
     @Column(nullable = false)
     private Integer baseXp;
 
@@ -93,6 +97,10 @@ public class Task {
     public TaskType getTaskType() {
         return taskType;
     }
+
+    public GrowthCategory getGrowthCategory() {
+        return growthCategory;
+    }
     
     public Integer getBaseXp() {
         return baseXp;
@@ -151,6 +159,10 @@ public class Task {
 
     public void setTaskType(TaskType taskType) {
         this.taskType = taskType;
+    }
+
+    public void setGrowthCategory(GrowthCategory growthCategory) {
+        this.growthCategory = growthCategory;
     }
 
     public void setBaseXp(Integer baseXp) {
